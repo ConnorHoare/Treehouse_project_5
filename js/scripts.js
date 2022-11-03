@@ -1,3 +1,18 @@
+// api url - returns 12 users in json format inlcuding name email picture and location
+const employeeUrl = "https://randomuser.me/api/?format=json&inc=picture,name,email,location&results=12";
+
+// put url into json using AJAX
+function getJSON(url, callback) {
+  const xhr = new XMLHttpRequest();
+  xhr.open("GET", url);
+  xhr.onload = () => {
+    if (xhr.status === 200) {
+      let data = JSON.parse(xhr.responseText);
+      return callback(data)
+    }
+  }
+  xhr.send();
+}
 
 function createSearchElement() {
   // get the search container div
@@ -14,19 +29,19 @@ function createSearchElement() {
   return searchContainer
 }
 
-function createGallery() {
+function createGallery(data) {
   // get gallety container
   let galleryContainer = document.getElementById('gallery');
 
-  // create emploee card
+  // create employee card using data passed in by api call
   let employeeCard = `<div class="card">
                         <div class="card-img-container">
-                          <img class="card-img" src="" alt="profile picture">
+                          <img class="card-img" src="${data.picture.thumbnail}" alt="profile picture">
                         </div>
                         <div class="card-info-container">
-                          <h3 id="name" class="card-name cap">first last</h3>
-                          <p class="card-text">email</p>
-                          <p class="card-text cap">city, state</p>
+                          <h3 id="name" class="card-name cap">${data.name.first} ${data.name.last}</h3>
+                          <p class="card-text">${data.email}</p>
+                          <p class="card-text cap">${data.location.city}, ${data.location.state}</p>
                         </div>
                       </div>`
 
@@ -56,17 +71,13 @@ function createModal() {
   document.body.insertAdjacentHTML("beforeend", modal);
 }
 
-function loadEmployees() {
-  let xhttp = new XMLHttpRequest();
-  xhttp.onreadystatechange = function() {
-    if (this.readyState === 4 && this.state === 200) {
-      console.log(this.responseText);
-    }
-  }
-  xhttp.open("GET", "https://randomuser.me/api/", true);
-  xhttp.send()
-}
 
+// get the employee array and map over to get each object and pass into createGallery function
+getJSON(employeeUrl, (json) => {
+  json.results.map (person => {
+    createGallery(person);
+  })
+})
 createSearchElement();
-createGallery();
-loadEmployees();
+// createGallery();
+// loadEmployees();
