@@ -1,5 +1,5 @@
 // api url - returns 12 users in json format inlcuding name email picture and location
-const employeeUrl = "https://randomuser.me/api/?format=json&inc=picture,name,email,location&results=12";
+const employeeUrl = "https://randomuser.me/api/?format=json&inc=picture,name,email,location,dob,phone&results=12";
 let employees = null;
 // get gallety container
 let galleryContainer = document.getElementById('gallery');
