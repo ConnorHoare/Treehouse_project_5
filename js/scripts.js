@@ -96,9 +96,8 @@ function createModal(data, isError) {
       galleryContainer.removeChild(modalContainer);
     });
   }
-  
-  
 }
+
 
 // create async func as results might not load straight away
 async function run() {
@@ -134,3 +133,24 @@ async function run() {
 
 run();
 
+
+
+let searchBar = createSearchElement();
+searchBar.addEventListener("keyup", (e) => {
+  // get the text input
+  // go over the employees names
+  // check if the text input matches a letter in their name
+  // remove the employees which dont have a match
+  let searchInput = document.getElementById("search-input");
+  for (var i = 0; i < employees.length; i++) {
+    const employeeName = employees[i].name.first + employees[i].name.last;
+    const lowercaseName = employeeName.toLowerCase();
+    for (var i = 0; i < lowercaseName.length; i++) {
+      const character = lowercaseName[i];
+      if (character != e.target.value) {
+        employees.splice(employees[i])
+      }
+    }
+    createGallery(employees[i], i)
+  }
+});
