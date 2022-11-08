@@ -1,8 +1,108 @@
-// api url - returns 12 users in json format inlcuding name email picture and location
+// Returns 12 users from Api Call
+// Gets the gallery div
+// create empty employee array -> will be populated with the api call to employeeUrl
+// call createModal() to be able to select modal modalContainer
 const employeeUrl = "https://randomuser.me/api/?format=json&inc=picture,name,email,location,dob,phone&results=12";
-let employees = null;
-// get gallety container
-let galleryContainer = document.getElementById('gallery');
+const galleryContainer = document.getElementById('gallery');
+let employees = [];
+createModal()
+const modalContainer = document.querySelector('.modal-container');
+
+fetch(employeeUrl)
+  .then((response) => {
+    if (response.status == 200) {
+      return response.json()
+    } else {
+      throw Error(response.statusText)
+    }
+  })
+  .then((data) => data.results)
+  .then(createGallery)
+
+function createGallery(data) {
+  employees = data;
+  // loop through employee array
+
+  for (var i = 0; i < employees.length; i++) {
+    let employee = employees[i];
+    // create employee card using data passed in by api call
+    let employeeCard = `<div class="card" data-index="${i}" data-first="${employee.name.first.toLowerCase()}" data-last="${employee.name.last.toLowerCase()}">
+                          <div class="card-img-container">
+                            <img class="card-img" src="${employee.picture.thumbnail}" alt="profile picture">
+                          </div>
+                          <div class="card-info-container">
+                            <h3 id="name" class="card-name cap">${employee.name.first} ${employee.name.last}</h3>
+                            <p class="card-text">${employee.email}</p>
+                            <p class="card-text cap">${employee.location.city}, ${employee.location.state}</p>
+                          </div>
+                        </div>`
+
+    // add employeeCard to the gallery container
+    galleryContainer.insertAdjacentHTML("beforeend", employeeCard);
+  };
+  return galleryContainer
+}
+
+function createModal(isError) {
+  // if there is no error create and display modal
+  if(!isError) {
+    let modal = `<div class="modal-container" style="display: none" data-index="">
+        <div class="modal">
+            <button type="button" id="modal-close-btn" class="modal-close-btn"><strong>X</strong></button>
+            <div class="modal-info-container">
+                <img id="img" class="modal-img" src="" alt="profile picture">
+                <h3 id="name" class="modal-name cap"></h3>
+                <p id="email" class="modal-text"></p>
+                <p id="city" class="modal-text cap"></p>
+                <hr>
+                <p id="phone" class="modal-text"></p>
+                <p id="address" class="modal-text"></p>
+                <p id="birthday" class="modal-text">Birthday: </p>
+            </div>
+        </div>
+        <div class="modal-btn-container">
+                <button type="button" id="modal-prev" class="modal-prev btn">Prev</button>
+                <button type="button" id="modal-next" class="modal-next btn">Next</button>
+        </div>
+    </div>`;
+
+    galleryContainer.insertAdjacentHTML('beforeend', modal)
+  } else {
+    let errorModal = `
+          <div class="modal-container" style="display: flex">
+            <div class="modal">
+            <button type="button" id="modal-close-btn" class="modal-close-btn"><strong>X</strong></button>
+            <div class="modal-info-container">
+                <img class="modal-img" src="https://placehold.it/125x125" alt="profile picture">
+                <h3 id="name" class="modal-name cap"></h3>
+            </div>
+          </div>
+        `
+
+        galleryContainer.insertAdjacentHTML("beforeend", errorModal);
+  }
+}
+
+function changeModal(index) {
+  const {name: {first, last}, dob, phone, email, location: {city, street, state, postcode}, picture} = employees[index];
+    modalContainer.setAttribute('data-index', index);
+    document.getElementById('img').src = picture.large;
+    document.getElementById('name').innerHTML = `${first} ${last}`;
+    document.getElementById('email').innerHTML = email;
+    document.getElementById('city').innerHTML = city;
+    document.getElementById('phone').innerHTML = phone;
+    document.getElementById('address').innerHTML = `${street.number} ${street.name}, ${city}, ${state} ${postcode}`;
+    document.getElementById('birthday').innerHTML = `Birthday: ${dob.date.substr(5,2)}/${dob.date.substr(8,2)}/${dob.date.substr(0,4)}`;
+
+}
+
+function showModal() {
+  modalContainer.style.display = "block"
+}
+
+function hideModal() {
+  modalContainer.style.display = "none"
+}
 
 function createSearchElement() {
   // get the search container div
@@ -19,126 +119,45 @@ function createSearchElement() {
   return searchContainer
 }
 
-function createGallery(data, index) {
-  
 
-  // create employee card using data passed in by api call
-  let employeeCard = `<div class="card" data-index="${index}" data-first="${data.name.first.toLowerCase()}" data-last="${data.name.last.toLowerCase()}">
-                        <div class="card-img-container">
-                          <img class="card-img" src="${data.picture.thumbnail}" alt="profile picture">
-                        </div>
-                        <div class="card-info-container">
-                          <h3 id="name" class="card-name cap">${data.name.first} ${data.name.last}</h3>
-                          <p class="card-text">${data.email}</p>
-                          <p class="card-text cap">${data.location.city}, ${data.location.state}</p>
-                        </div>
-                      </div>`
+galleryContainer.addEventListener('click', (e) => {
+  // Get closest the card that was clicked and its data-index
+  const card = e.target.closest('.card');
+  const cardIndex = card.getAttribute('data-index');
+  console.log(cardIndex);
 
-  // add employeeCard to the gallery container
-   galleryContainer.insertAdjacentHTML("beforeend", employeeCard);
-   galleryContainer.lastElementChild.addEventListener("click", (event) => {
-    createModal(employees[index], false)
-   })
-   // return the container
-   return galleryContainer
-}
+  // Call the change and display modal functions to display the modal on the clicked card.
+  changeModal(cardIndex);
+  showModal()
+});
 
-// create pop up modal
-function createModal(data, isError) {
-  if (!isError) {
-    // create dob string based on the result from dob in api call
-    const dob = data.dob.date;
-    const date = dob.substr(5,2) + "/" + dob.substr(8,2) + "/" + dob.substr(0,4);
-    // create modal
-    let modal = `<div class="modal-container">
-                  <div class="modal">
-                    <button type="button" id="modal-close-btn" class="modal-close-btn"><strong>X</strong></button>
-                  <div class="modal-info-container">
-                    <img class="modal-img" src="${data.picture.medium}" alt="profile picture">
-                    <h3 id="name" class="modal-name cap">${data.name.first} ${data.name.last}</h3>
-                    <p class="modal-text">${data.email}</p>
-                    <p class="modal-text cap">${data.location.city}</p>
-                    <hr>
-                    <p class="modal-text">${data.phone}</p>
-                    <p class="modal-text">${data.location.street.number} ${data.location.street.name}, ${data.location.city}, ${data.location.state} ${data.location.postcode}</p>
-                    <p class="modal-text">Birthday: ${date}</p>
-                  </div>
-                  </div>
-                  <div class="modal-btn-container">
-                    <button type="button" id="modal-prev" class="modal-prev btn">Prev</button>
-                    <button type="button" id="modal-next" class="modal-next btn">Next</button>
-                  </div>
-                </div>`
+const closeButton = document.getElementById('modal-close-btn');
+closeButton.addEventListener('click', hideModal);
 
-    // insert modal to the gallery container
-    galleryContainer.insertAdjacentHTML("beforeend", modal);
-
-    // remove modal by closing modal window
-    let closeBtn = document.getElementById('modal-close-btn');
-    closeBtn.addEventListener("click", () => {
-      let modalContainer = galleryContainer.querySelector(".modal-container");
-      galleryContainer.removeChild(modalContainer);
-    });
-
+const nextModal = document.getElementById('modal-next');
+nextModal.addEventListener('click', () => {
+  const modalIndex = parseInt(modalContainer.getAttribute('data-index'));
+  if (modalIndex === 11) {
+    changeModal(0);
+    showModal();
   } else {
-    let errorModal = `
-      <div class="modal-container">
-        <div class="modal">
-        <button type="button" id="modal-close-btn" class="modal-close-btn"><strong>X</strong></button>
-        <div class="modal-info-container">
-            <img class="modal-img" src="https://placehold.it/125x125" alt="profile picture">
-            <h3 id="name" class="modal-name cap">${data}</h3>
-        </div>
-      </div>
-    `
-
-    galleryContainer.insertAdjacentHTML("beforeend", errorModal);
-
-    let closeBtn = document.getElementById('modal-close-btn');
-    closeBtn.addEventListener('click', () => {
-      let modalContainer = galleryContainer.querySelector(".modal-container");
-      galleryContainer.removeChild(modalContainer);
-    });
+    changeModal(modalIndex + 1);
+    showModal();
   }
-}
+})
 
-
-// create async func as results might not load straight away
-async function run() {
-  // create empty fetch response 
-  let fetchResponse = null;
-
-  // try fetch the emplyeeUrl Api
-  try {
-    fetchResponse = await fetch(employeeUrl);
-    // otherwise catch the error and create the modal with the default presets for errors
-  } catch (error) {
-    createModal(error, true);
+const previousModal = document.getElementById('modal-prev');
+previousModal.addEventListener('click', () => {
+  const modalIndex = parseInt(modalContainer.getAttribute('data-index'));
+  if (modalIndex === 0) {
+    changeModal(11);
+    showModal();
+  } else {
+    changeModal(modalIndex - 1);
+    showModal();
   }
+});
 
-  // if there is no error and the fetch request is ok
-  if (fetchResponse != null && fetchResponse.ok) {
-    // add the json from the fetch response to json var
-    let json = await fetchResponse.json();
-    // add the results from the api to the employees
-    employees = json.results
-
-    if (employees != null) {
-      galleryContainer.innerHTML = ''
-      for (var i = 0; i < employees.length; i++) {
-        const employee = employees[i];
-        createGallery(employee, i)
-      }
-    } else {
-      createModal("Could not fetch information", true)
-    }
-  }
-}
-
-run();
-
-
-let filteredEmployees = []
 let searchBar = createSearchElement();
 searchBar.addEventListener("keyup", (e) => {
   // get the text input
