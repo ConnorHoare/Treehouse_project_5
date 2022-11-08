@@ -23,7 +23,7 @@ function createGallery(data, index) {
   
 
   // create employee card using data passed in by api call
-  let employeeCard = `<div class="card">
+  let employeeCard = `<div class="card" data-index="${index}" data-first="${data.name.first.toLowerCase()}" data-last="${data.name.last.toLowerCase()}">
                         <div class="card-img-container">
                           <img class="card-img" src="${data.picture.thumbnail}" alt="profile picture">
                         </div>
@@ -63,6 +63,10 @@ function createModal(data, isError) {
                     <p class="modal-text">${data.location.street.number} ${data.location.street.name}, ${data.location.city}, ${data.location.state} ${data.location.postcode}</p>
                     <p class="modal-text">Birthday: ${date}</p>
                   </div>
+                  </div>
+                  <div class="modal-btn-container">
+                    <button type="button" id="modal-prev" class="modal-prev btn">Prev</button>
+                    <button type="button" id="modal-next" class="modal-next btn">Next</button>
                   </div>
                 </div>`
 
@@ -134,23 +138,22 @@ async function run() {
 run();
 
 
-
+let filteredEmployees = []
 let searchBar = createSearchElement();
 searchBar.addEventListener("keyup", (e) => {
   // get the text input
   // go over the employees names
   // check if the text input matches a letter in their name
   // remove the employees which dont have a match
-  let searchInput = document.getElementById("search-input");
-  for (var i = 0; i < employees.length; i++) {
-    const employeeName = employees[i].name.first + employees[i].name.last;
-    const lowercaseName = employeeName.toLowerCase();
-    for (var i = 0; i < lowercaseName.length; i++) {
-      const character = lowercaseName[i];
-      if (character != e.target.value) {
-        employees.splice(employees[i])
-      }
+  let searchInput = document.getElementById("search-input").value;
+  let cards = document.getElementsByClassName("card");
+  for (const card of cards) {
+    const firstName = card.getAttribute("data-first");
+    const lastName = card.getAttribute("data-last");
+    if (lastName.includes(searchInput) || firstName.includes(searchInput)) {
+      card.style.display = "flex"
+    } else {
+      card.style.display = "none"
     }
-    createGallery(employees[i], i)
   }
 });
