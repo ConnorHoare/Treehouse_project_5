@@ -8,6 +8,10 @@ let employees = [];
 createModal()
 const modalContainer = document.querySelector('.modal-container');
 
+// fetch the api
+// if the response is successful return the json - otherwise throw error with message
+// then get the results
+// then call createGallery
 fetch(employeeUrl)
   .then((response) => {
     if (response.status == 200) {
@@ -22,7 +26,6 @@ fetch(employeeUrl)
 function createGallery(data) {
   employees = data;
   // loop through employee array
-
   for (var i = 0; i < employees.length; i++) {
     let employee = employees[i];
     // create employee card using data passed in by api call
@@ -45,6 +48,7 @@ function createGallery(data) {
 
 function createModal(isError) {
   // if there is no error create and display modal
+  // If error, create an error modal
   if(!isError) {
     let modal = `<div class="modal-container" style="display: none" data-index="">
         <div class="modal">
@@ -78,14 +82,17 @@ function createModal(isError) {
             </div>
           </div>
         `
-
         galleryContainer.insertAdjacentHTML("beforeend", errorModal);
   }
 }
 
+
 function changeModal(index) {
+  // store employee data
   const {name: {first, last}, dob, phone, email, location: {city, street, state, postcode}, picture} = employees[index];
     modalContainer.setAttribute('data-index', index);
+
+    // Set the html to the current employees data
     document.getElementById('img').src = picture.large;
     document.getElementById('name').innerHTML = `${first} ${last}`;
     document.getElementById('email').innerHTML = email;
@@ -121,19 +128,22 @@ function createSearchElement() {
 
 
 galleryContainer.addEventListener('click', (e) => {
+  if (e.target.closest('.card')) {
   // Get closest the card that was clicked and its data-index
   const card = e.target.closest('.card');
   const cardIndex = card.getAttribute('data-index');
-  console.log(cardIndex);
 
   // Call the change and display modal functions to display the modal on the clicked card.
   changeModal(cardIndex);
   showModal()
+}
 });
 
+// get close button for the modal and hide the modal when this button is clicked
 const closeButton = document.getElementById('modal-close-btn');
 closeButton.addEventListener('click', hideModal);
 
+// get the next modal button and update the modal based on current modalIndex
 const nextModal = document.getElementById('modal-next');
 nextModal.addEventListener('click', () => {
   const modalIndex = parseInt(modalContainer.getAttribute('data-index'));
@@ -146,6 +156,7 @@ nextModal.addEventListener('click', () => {
   }
 })
 
+// get the previous modal button and update the modal based on current modalIndex
 const previousModal = document.getElementById('modal-prev');
 previousModal.addEventListener('click', () => {
   const modalIndex = parseInt(modalContainer.getAttribute('data-index'));
